@@ -15,8 +15,15 @@ kafka_go_consumer/
 ├── README.md              # This file
 ├── docker-compose.yml     # Kafka cluster configuration
 ├── example_consumer.go    # Go Kafka consumer example
-├── go.mod                 # Go module dependencies
-└── go.sum                 # Go module checksums (generated)
+├── example_consumer_test.go # Unit tests for the consumer
+├── test_config.go         # Test utilities and configuration
+├── integration_test.go    # Integration tests (requires Kafka)
+├── .github/workflows/     # CI/CD configuration
+│   └── test.yml          # GitHub Actions workflow
+├── .golangci.yml         # Linting configuration
+├── Makefile              # Build and test commands
+├── go.mod                # Go module dependencies
+└── go.sum                # Go module checksums (generated)
 ```
 
 ## Quick Start
@@ -31,6 +38,10 @@ docker-compose up -d
 
 # Or start with Kafka UI (optional)
 docker-compose --profile ui up -d
+
+# Or use the Makefile
+make docker-up
+make docker-up-ui
 ```
 
 **Note**: The first startup may take a few minutes as Kafka formats its storage and initializes.
@@ -255,6 +266,85 @@ This setup is for **development only**. For production:
 - Use external monitoring and alerting
 - Configure proper retention policies
 - Use dedicated storage volumes
+
+## Development Commands
+
+This project includes a comprehensive Makefile for common development tasks:
+
+```bash
+# Show all available commands
+make help
+
+# Docker operations
+make docker-up          # Start Kafka cluster
+make docker-up-ui      # Start Kafka with UI
+make docker-down       # Stop Kafka cluster
+make docker-logs       # Show Kafka logs
+
+# Development workflow
+make deps              # Install dependencies
+make fmt               # Format code
+make lint              # Run linter
+make check             # Run all checks (fmt, lint, test)
+make build             # Build the application
+make run               # Build and run the consumer
+
+# Testing (see Testing section below)
+make test              # Run all tests
+make test-verbose      # Run tests with verbose output
+make test-coverage     # Run tests with coverage report
+make test-race         # Run tests with race detection
+make benchmark         # Run benchmarks
+make integration-test  # Run integration tests with Kafka
+```
+
+## Testing
+
+### Running Tests
+
+```bash
+# Run all tests
+make test
+
+# Run tests with verbose output
+make test-verbose
+
+# Run tests with coverage report
+make test-coverage
+
+# Run tests with race detection
+make test-race
+
+# Run benchmarks
+make benchmark
+
+# Run all checks (format, lint, test)
+make check
+```
+
+### Test Types
+
+- **Unit Tests**: Test individual components in isolation using mocks
+- **Integration Tests**: Test against real Kafka instance (requires `docker-up`)
+- **Benchmarks**: Performance testing for critical paths
+
+### Test Coverage
+
+The test suite covers:
+- Consumer creation and configuration
+- Message processing
+- Error handling
+- Consumer group lifecycle
+- Mock implementations for external dependencies
+
+### CI/CD
+
+GitHub Actions automatically runs:
+- Unit tests
+- Integration tests
+- Code linting
+- Security scanning
+- Build verification
 
 ## Additional Resources
 
