@@ -1,6 +1,6 @@
 # Kafka Go Consumer Example
 
-This project demonstrates how to create a Kafka consumer in Go using the Sarama library, with a local Kafka cluster running on Docker using KRaft.
+This project demonstrates how to create a Kafka consumer in Go using the Sarama library, with a local Kafka cluster running on Docker using Confluent Platform.
 
 ## Prerequisites
 
@@ -76,8 +76,8 @@ The consumer will start and wait for messages on the `example-topic`.
 
 The `docker-compose.yml` file sets up:
 
-- **Kafka 3.6.1** with KRaft consensus (no Zookeeper)
-- **Single-node cluster** for development
+- **Confluent Platform Kafka 7.5.0** with Zookeeper
+- **Single-node cluster** for development  
 - **Port 9092** exposed for external connections
 - **Persistent storage** using Docker volumes
 - **Health checks** to ensure Kafka is ready
@@ -103,10 +103,10 @@ Topics are auto-created by default, but you can manually create one:
 docker exec -it kafka bash
 
 # Create a topic
-kafka-topics --bootstrap-server localhost:9093 --create --topic example-topic --partitions 1 --replication-factor 1
+kafka-topics --bootstrap-server localhost:9092 --create --topic example-topic --partitions 1 --replication-factor 1
 
 # List topics
-kafka-topics --bootstrap-server localhost:9093 --list
+kafka-topics --bootstrap-server localhost:9092 --list
 ```
 
 ### 2. Send Test Messages
@@ -116,10 +116,10 @@ kafka-topics --bootstrap-server localhost:9093 --list
 docker exec -it kafka bash
 
 # Send a test message
-echo "Hello, Kafka!" | kafka-console-producer --bootstrap-server localhost:9093 --topic example-topic
+echo "Hello, Kafka!" | kafka-console-producer --bootstrap-server localhost:9092 --topic example-topic
 
 # Or send multiple messages
-kafka-console-producer --bootstrap-server localhost:9093 --topic example-topic
+kafka-console-producer --bootstrap-server localhost:9092 --topic example-topic
 > Message 1
 > Message 2
 > Message 3
@@ -207,10 +207,10 @@ docker-compose logs kafka
 **Solution**: Check if messages are being sent to the correct topic:
 ```bash
 # Check topic exists
-docker exec -it kafka kafka-topics --bootstrap-server localhost:9093 --list
+docker exec -it kafka kafka-topics --bootstrap-server localhost:9092 --list
 
 # Check message count
-docker exec -it kafka kafka-run-class kafka.tools.GetOffsetShell --bootstrap-server localhost:9093 --topic example-topic
+docker exec -it kafka kafka-run-class kafka.tools.GetOffsetShell --bootstrap-server localhost:9092 --topic example-topic
 ```
 
 ### Reset Everything
@@ -247,7 +247,7 @@ docker-compose ps
 go run example_consumer.go
 
 # In another terminal, send test messages
-docker exec -it kafka kafka-console-producer --bootstrap-server localhost:9093 --topic example-topic
+docker exec -it kafka kafka-console-producer --bootstrap-server localhost:9092 --topic example-topic
 ```
 
 ### 3. Iterate

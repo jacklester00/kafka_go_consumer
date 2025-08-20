@@ -11,30 +11,34 @@ jobs:
     runs-on: ubuntu-latest
     
     services:
+      zookeeper:
+        image: confluentinc/cp-zookeeper:7.5.0
+        env:
+          ZOOKEEPER_CLIENT_PORT: 2181
+          ZOOKEEPER_TICK_TIME: 2000
+        ports:
+          - 2181:2181
+
       kafka:
-        image: apache/kafka:3.6.1
+        image: confluentinc/cp-kafka:7.5.0
         ports:
           - 9092:9092
         env:
-          KAFKA_NODE_ID: 1
-          KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
-          KAFKA_LISTENERS: INTERNAL://:9093,EXTERNAL://:9092
-          KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:9093,EXTERNAL://localhost:9092
-          KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
-          KAFKA_CONTROLLER_LISTENER_NAMES: INTERNAL
-          KAFKA_PROCESS_ROLES: broker,controller
-          KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
-          KAFKA_LOG_DIRS: /tmp/kraft-combined-logs
+          KAFKA_BROKER_ID: 1
+          KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+          KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+          KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+          KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
           KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
           KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
           KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
           KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
           KAFKA_AUTO_CREATE_TOPICS_ENABLE: true
         options: >-
-          --health-cmd "kafka-topics --bootstrap-server localhost:9092 --list"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
+          --health-cmd "bash -c 'echo > /dev/tcp/localhost/9092'"
+          --health-interval 30s
+          --health-timeout 15s
+          --health-retries 10
 
     steps:
     - uses: actions/checkout@v4
@@ -69,8 +73,8 @@ jobs:
       run: |
         # Wait for Kafka to be ready
         echo "Waiting for Kafka to be ready..."
-        timeout 60s bash -c 'until kafka-topics --bootstrap-server localhost:9092 --list; do sleep 2; done'
-        echo "Kafka is ready!"
+        sleep 30
+        echo "Kafka should be ready now!"
         
         # Run integration tests
         go test -v -tags=integration ./...
