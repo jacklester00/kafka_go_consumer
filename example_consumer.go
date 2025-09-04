@@ -42,7 +42,9 @@ func NewConsumer(brokers []string, groupID string, topics []string) (*Consumer, 
 }
 
 // Setup is run at the beginning of a new session, before ConsumeClaim
-func (c *Consumer) Setup(sarama.ConsumerGroupSession) error {
+func (c *Consumer) Setup(session sarama.ConsumerGroupSession) error {
+	log.Printf("Consumer group session setup - Member ID: %s", session.MemberID())
+	log.Printf("Consumer group session setup - Claims: %v", session.Claims())
 	// Mark the consumer as ready
 	close(c.ready)
 	return nil
@@ -94,12 +96,11 @@ func (c *Consumer) processMessage(message *sarama.ConsumerMessage) {
 
 // Start begins consuming messages
 func (c *Consumer) Start(ctx context.Context) error {
-	// Wait until the consumer has been set up
-	<-c.ready
-	log.Println("Consumer is ready, starting to consume messages...")
-
+	log.Println("Starting consumer, waiting for setup...")
+	
 	// Start consuming in a loop
 	for {
+		log.Printf("Calling consumer.Consume() for topics: %v", c.topics)
 		err := c.consumer.Consume(ctx, c.topics, c)
 		if err != nil {
 			log.Printf("Error from consumer: %v", err)
@@ -108,6 +109,14 @@ func (c *Consumer) Start(ctx context.Context) error {
 		// Check if context was cancelled
 		if ctx.Err() != nil {
 			return ctx.Err()
+		}
+		
+		// Wait until the consumer has been set up
+		select {
+		case <-c.ready:
+			log.Println("Consumer is ready, continuing to consume messages...")
+		default:
+			// ready channel already closed, continue
 		}
 	}
 }
