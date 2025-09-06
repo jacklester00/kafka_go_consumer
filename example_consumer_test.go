@@ -28,7 +28,7 @@ func TestConsumer_processMessage(t *testing.T) {
 // TestConsumer_Cleanup tests the Cleanup method
 func TestConsumer_Cleanup(t *testing.T) {
 	consumer := &Consumer{}
-	
+
 	// Cleanup should always return nil
 	err := consumer.Cleanup(nil)
 	assert.NoError(t, err)
