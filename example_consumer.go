@@ -97,7 +97,6 @@ func (c *Consumer) processMessage(message *sarama.ConsumerMessage) {
 // Start begins consuming messages
 func (c *Consumer) Start(ctx context.Context) error {
 	log.Println("Starting consumer, waiting for setup...")
-	
 	// Start consuming in a loop
 	for {
 		log.Printf("Calling consumer.Consume() for topics: %v", c.topics)
@@ -110,7 +109,7 @@ func (c *Consumer) Start(ctx context.Context) error {
 		if ctx.Err() != nil {
 			return ctx.Err()
 		}
-		
+
 		// Wait until the consumer has been set up
 		select {
 		case <-c.ready:
@@ -186,7 +185,8 @@ func ExampleSimpleConsumer() {
 
 	partitionConsumer, err := consumer.ConsumePartition("example-topic", 0, sarama.OffsetOldest)
 	if err != nil {
-		log.Fatalf("Failed to create partition consumer: %v", err)
+		log.Printf("Failed to create partition consumer: %v", err)
+		return
 	}
 	defer partitionConsumer.Close()
 
