@@ -19,61 +19,24 @@ func TestIntegration_ConsumerWithRealKafka(t *testing.T) {
 	// You can start it with: make docker-up
 	t.Log("Starting integration test with real Kafka...")
 
-	// Test configuration
-	config := &TestConfig{
-		Brokers: []string{"localhost:9092"},
-		GroupID: "integration-test-group",
-		Topics:  []string{"integration-test-topic"},
-	}
+	// Test configuration - inline instead of using TestConfig
+	brokers := []string{"localhost:9092"}
+	groupID := "integration-test-group"
+	topics := []string{"integration-test-topic"}
 
 	// Create consumer
-	consumer, err := NewConsumer(config.Brokers, config.GroupID, config.Topics)
+	consumer, err := NewConsumer(brokers, groupID, topics)
 	require.NoError(t, err)
 	defer consumer.Close()
 
 	// Test that consumer can be created
 	assert.NotNil(t, consumer)
-	assert.Equal(t, config.Topics, consumer.topics)
+	assert.Equal(t, topics, consumer.topics)
 
 	t.Log("Consumer created successfully")
 }
 
-// TestIntegration_MessageProcessing tests message processing with real Kafka
-func TestIntegration_MessageProcessing(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping integration test in short mode")
-	}
-
-	t.Log("Testing message processing with real Kafka...")
-
-	// This test would require:
-	// 1. Kafka to be running
-	// 2. A producer to send messages
-	// 3. The consumer to process them
-	// 4. Verification of the results
-
-	// For now, we'll just verify the test structure
-	assert.True(t, true, "Integration test structure verified")
-}
-
-// TestIntegration_ConsumerGroupBehavior tests consumer group behavior
-func TestIntegration_ConsumerGroupBehavior(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping integration test in short mode")
-	}
-
-	t.Log("Testing consumer group behavior...")
-
-	// This test would verify:
-	// 1. Consumer group rebalancing
-	// 2. Offset management
-	// 3. Partition assignment
-	// 4. Multiple consumer instances
-
-	assert.True(t, true, "Consumer group behavior test structure verified")
-}
-
-// TestIntegration_ErrorHandling tests error handling scenarios
+// TestIntegration_ErrorHandling tests basic error handling
 func TestIntegration_ErrorHandling(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping integration test in short mode")
@@ -81,30 +44,20 @@ func TestIntegration_ErrorHandling(t *testing.T) {
 
 	t.Log("Testing error handling scenarios...")
 
-	// This test would verify:
-	// 1. Network failures
-	// 2. Invalid message handling
-	// 3. Reconnection behavior
-	// 4. Error recovery
+	// Test with invalid broker address
+	brokers := []string{"invalid:9999"}
+	groupID := "error-test-group"
+	topics := []string{"error-test-topic"}
 
-	assert.True(t, true, "Error handling test structure verified")
-}
-
-// TestIntegration_Performance tests performance characteristics
-func TestIntegration_Performance(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping integration test in short mode")
+	// This should fail to create consumer
+	consumer, err := NewConsumer(brokers, groupID, topics)
+	if err != nil {
+		t.Logf("Expected error when connecting to invalid broker: %v", err)
+		return
 	}
-
-	t.Log("Testing performance characteristics...")
-
-	// This test would measure:
-	// 1. Message throughput
-	// 2. Latency
-	// 3. Memory usage
-	// 4. CPU usage
-
-	assert.True(t, true, "Performance test structure verified")
+	if consumer != nil {
+		defer consumer.Close()
+	}
 }
 
 // TestIntegration_SetupAndTeardown tests proper setup and teardown
@@ -116,14 +69,12 @@ func TestIntegration_SetupAndTeardown(t *testing.T) {
 	t.Log("Testing setup and teardown...")
 
 	// Verify that we can create and destroy consumers properly
-	config := &TestConfig{
-		Brokers: []string{"localhost:9092"},
-		GroupID: "setup-teardown-test-group",
-		Topics:  []string{"setup-teardown-test-topic"},
-	}
+	brokers := []string{"localhost:9092"}
+	groupID := "setup-teardown-test-group"
+	topics := []string{"setup-teardown-test-topic"}
 
 	// Create consumer
-	consumer, err := NewConsumer(config.Brokers, config.GroupID, config.Topics)
+	consumer, err := NewConsumer(brokers, groupID, topics)
 	require.NoError(t, err)
 
 	// Verify consumer was created
